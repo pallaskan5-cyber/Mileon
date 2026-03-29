@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#06b6d4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mileon">
+    <meta name="description" content="Mileon - Track Your Journey">
+    <meta name="format-detection" content="telephone=no">
+    <title>Mileon Social - Track Your Journey</title>
+    
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-500: #06B6D4; --primary-400: #22D3EE; --primary-600: #0891B2;
+            --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB; --gray-400: #9CA3AF; --gray-500: #6B7280;
+            --gray-600: #4B5563; --gray-700: #374151; --gray-800: #1F2937;
+            --gray-900: #111827; --gray-950: #030712;
+            --success: #10B981; --warning: #F59E0B; --error: #EF4444; --info: #3B82F6;
+            --bg-primary: var(--gray-50); --bg-secondary: #F8FAFC; --bg-tertiary: #E2E8F0;
+            --bg-card: rgba(255, 255, 255, 0.98); --bg-overlay: rgba(0, 0, 0, 0.5);
+            --text-primary: var(--gray-900); --text-secondary: var(--gray-600);
+            --text-tertiary: var(--gray-500); --text-muted: var(--gray-400);
+            --border-default: var(--gray-200); --border-light: var(--gray-300);
+            --gradient-primary: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-400) 100%);
+            --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.99) 100%);
+            --gradient-glow: radial-gradient(circle at center, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            --shadow-glow: 0 0 30px rgba(6, 182, 212, 0.3);
+            --radius-xl: 1rem; --radius-2xl: 1.5rem; --radius-3xl: 2rem; --radius-full: 9999px;
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --font-family: 'Inter', sans-serif; --font-display: 'Orbitron', sans-serif;
+            --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --z-fixed: 1030; --z-modal: 1050; --z-toast: 1080; --z-chat: 1100;
+        }
+        [data-theme="dark"] {
+            --bg-primary: var(--gray-950); --bg-secondary: #0B1120; --bg-tertiary: #1E293B;
+            --bg-card: rgba(30, 41, 59, 0.98); --text-primary: var(--gray-50);
+            --text-secondary: var(--gray-300); --text-tertiary: var(--gray-400);
+            --text-muted: var(--gray-500); --border-default: rgba(56, 189, 248, 0.2);
+            --gradient-card: linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.99) 100%);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+        body {
+            font-family: var(--font-family); background: var(--bg-primary); color: var(--text-primary);
+            line-height: 1.6; min-height: 100vh; min-height: 100dvh; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
+            pointer-events: none; z-index: -1;
+        }
+        .hidden { display: none !important; }
+        .flex { display: flex; } .flex-col { flex-direction: column; }
+        .items-center { align-items: center; } .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; } .gap-3 { gap: 0.75rem; } .gap-4 { gap: 1rem; }
+        .text-center { text-align: center; } .text-primary { color: var(--primary-500); }
+        .text-secondary { color: var(--text-secondary); } .text-tertiary { color: var(--text-tertiary); }
+        .font-bold { font-weight: 700; } .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; } .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; } .text-3xl { font-size: 1.875rem; }
+        .w-full { width: 100%; } .cursor-pointer { cursor: pointer; }
+        .overflow-hidden { overflow: hidden; } .overflow-y-auto { overflow-y: auto; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.08); } }
+        @keyframes pulse-ring { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+        .animate-pulse-ring { animation: pulse-ring 1.5s ease-out infinite; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-slide-in-right { animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        #landing-screen { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+        .landing-hero {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: calc(2rem + var(--safe-top)) 1.25rem calc(2rem + var(--safe-bottom)); text-align: center;
+        }
+        .landing-logo { margin-bottom: 2rem; animation: float 8s ease-in-out infinite; }
+        .landing-logo-icon {
+            width: 140px; height: 140px; background: var(--gradient-primary);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-glow), var(--shadow-xl); margin: 0 auto;
+        }
+        .landing-logo-icon i { font-size: 4.5rem; color: white; }
+        .landing-title {
+            font-family: var(--font-display); font-size: clamp(3rem, 12vw, 6rem); font-weight: 900;
+            background: linear-gradient(to right, #22D3EE, #06B6D4, #3B82F6);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;
+        }
+        .landing-tagline {
+            font-size: clamp(1rem, 3.5vw, 1.25rem); color: var(--text-secondary);
+            max-width: 500px; margin-bottom: 2rem; line-height: 1.7;
+        }
+        .landing-cta { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; max-width: 360px; }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 1rem 1.5rem; border: none; border-radius: var(--radius-xl);
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: all var(--transition-fast); font-family: var(--font-family);
+            position: relative; overflow: hidden;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+        .btn.loading { color: transparent !important; pointer-events: none; }
+        .btn.loading::after {
+            content: ''; position: absolute; width: 20px; height: 20px;
+            border: 2px solid transparent; border-top-color: currentColor;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+            top: 50%; left: 50%; margin-left: -10px; margin-top: -10px;
+        }
+        .btn-primary {
+            background: var(--gradient-primary); color: white; width: 100%;
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(6, 182, 212, 0.3);
+        }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: var(--shadow-xl), var(--shadow-glow); }
+        .btn-secondary { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-default); }
+        .btn-secondary:hover:not(:disabled) { background: var(--bg-tertiary); color: var(--text-primary); }
+        .btn-ghost { background: transparent; color: var(--text-tertiary); }
+        .btn-icon { padding: 0.75rem; border-radius: var(--radius-full); width: auto; }
+        .btn-guest { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-default); width: 100%; }
+        .btn-guest:hover:not(:disabled) { background: var(--bg-secondary); color: var(--text-primary); transform: translateY(-2px); }
+        .btn-google {
+            background: white; color: #111827; border: 1px solid var(--border-default);
+            width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn-google:hover:not(:disabled) { background: #F9FAFB; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-google i { color: #DB4437; }
+
+        #auth-screen {
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; align-items: center; justify-content: center;
+            padding: calc(1.5rem + var(--safe-top)) 1.25rem calc(1.5rem + var(--safe-bottom));
+        }
+        .auth-container {
+            width: 100%; max-width: 420px; background: var(--gradient-card);
+            border-radius: var(--radius-3xl); padding: 2rem;
+            border: 1px solid var(--border-default); box-shadow: var(--shadow-2xl); backdrop-filter: blur(20px);
+        }
+        .auth-header { text-align: center; margin-bottom: 2rem; }
+        .auth-logo {
+            width: 85px; height: 85px; background: var(--gradient-primary);
+            border-radius: var(--radius-2xl); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;
+        }
+        .auth-logo i { font-size: 2.25rem; color: white; }
+        .auth-title { font-size: var(--text-2xl); font-weight: 800; margin-bottom: 0.5rem; font-family: var(--font-display); }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; }
+        .form-input-wrapper { position: relative; }
+        .form-input-icon {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); pointer-events: none; z-index: 1;
+        }
+        .form-input {
+            width: 100%; padding: 1rem 1rem 1rem 3rem; background: var(--bg-tertiary);
+            border: 1px solid var(--border-default); border-radius: var(--radius-xl);
+            color: var(--text-primary); font-size: 1rem; font-family: var(--font-family);
+        }
+        .form-input:focus { outline: none; border-color: var(--primary-500); box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.15); }
+        .form-input:focus + .form-input-icon { color: var(--primary-500); }
+        .form-input.error { border-color: var(--error); animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+        .auth-divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; color: var(--text-muted); font-size: var(--text-sm); }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-default); }
+        .auth-switch { text-align: center; margin-top: 1.5rem; color: var(--text-tertiary); font-size: var(--text-sm); }
+        .auth-switch a { color: var(--primary-500); text-decoration: none; font-weight: 600; }
+        .auth-switch a:hover { text-decoration: underline; }
+
+        #app-screen { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+        .app-header {
+            position: sticky; top: 0; z-index: 1020; background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-default);
+            padding: calc(1rem + var(--safe-top)) 1.25rem 1rem; display: flex; align-items: center; justify-content: space-between;
+        }
+        [data-theme="dark"] .app-header { background: rgba(11, 17, 32, 0.95); }
+        .header-logo { display: flex; align-items: center; gap: 0.75rem; }
+        .header-logo-icon {
+            width: 44px; height: 44px; background: var(--gradient-primary);
+            border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+        }
+        .header-logo-icon i { font-size: 1.25rem; color: white; }
+        .header-logo-text {
+            font-family: var(--font-display); font-size: var(--text-xl); font-weight: 900;
+            background: linear-gradient(to right, #22D3EE, #06B6D4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+        .header-btn {
+            width: 44px; height: 44px; border-radius: var(--radius-full);
+            background: var(--bg-tertiary); border: 1px solid var(--border-default);
+            color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative;
+        }
+        .header-btn:hover { background: var(--bg-card); color: var(--text-primary); }
+        .header-btn .badge {
+            position: absolute; top: 10px; right: 10px; width: 10px; height: 10px;
+            background: var(--primary-500); border-radius: var(--radius-full);
+            border: 2px solid var(--bg-secondary); animation: pulse 2s ease-in-out infinite;
+        }
+        .user-avatar {
+            width: 44px; height: 44px; border-radius: var(--radius-full);
+            background: var(--gradient-primary); display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: var(--text-sm); color: white;
+            cursor: pointer; border: 2px solid var(--border-default); overflow: hidden;
+        }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .app-main { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+        .view-section { padding: 1.25rem; }
+        .card {
+            background: var(--gradient-card); border: 1px solid var(--border-default);
+            border-radius: var(--radius-2xl); padding: 1.5rem; margin-bottom: 1.25rem; backdrop-filter: blur(20px);
+        }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+        .card-title { font-size: var(--text-lg); font-weight: 700; }
+        .card-subtitle { color: var(--text-tertiary); font-size: var(--text-sm); margin-top: 0.25rem; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+        .stat-card {
+            background: var(--bg-tertiary); border-radius: var(--radius-xl);
+            padding: 1rem; text-align: center; border: 1px solid var(--border-default);
+        }
+        .stat-card:hover { transform: translateY(-4px); border-color: var(--primary-500); }
+        .stat-icon { font-size: var(--text-xl); color: var(--primary-500); margin-bottom: 0.5rem; }
+        .stat-value { font-size: var(--text-2xl); font-weight: 900; line-height: 1.2; }
+        .stat-label { color: var(--text-muted); font-size: 0.625rem; text-transform: uppercase; margin-top: 0.25rem; }
+
+        #map-container {
+            height: calc(100dvh - 240px); min-height: 450px;
+            border-radius: var(--radius-3xl); overflow: hidden;
+            border: 1px solid var(--border-default); position: relative;
+        }
+        #map { height: 100%; width: 100%; }
+        .map-overlay { position: absolute; top: 1rem; right: 1rem; z-index: 1060; display: flex; flex-direction: column; gap: 0.5rem; }
+        .map-btn {
+            width: 50px; height: 50px; border-radius: var(--radius-xl);
+            background: var(--bg-card); border: 1px solid var(--border-default);
+            color: var(--text-primary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; backdrop-filter: blur(10px);
+        }
+        .map-btn:hover { border-color: var(--primary-500); }
+
+        .tracking-controls {
+            position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%;
+            transform: translateX(-50%); z-index: var(--z-fixed);
+            display: flex; gap: 1rem; padding: 1rem;
+        }
+        .tracking-btn {
+            width: 76px; height: 76px; border-radius: var(--radius-full); border: none;
+            font-size: var(--text-2xl); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .tracking-btn.start { background: var(--gradient-primary); color: white; }
+        .tracking-btn.start:hover { transform: scale(1.12); box-shadow: var(--shadow-xl), var(--shadow-glow); }
+        .tracking-btn.stop { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; }
+        .tracking-btn.stop:hover { transform: scale(1.12); }
+        .tracking-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .tracking-stats {
+            position: fixed; bottom: calc(175px + var(--safe-bottom)); left: 50%;
+            transform: translateX(-50%); z-index: var(--z-fixed);
+            background: var(--bg-card); border: 1px solid var(--border-default);
+            border-radius: var(--radius-3xl); padding: 1rem 1.5rem;
+            display: flex; gap: 1.25rem; backdrop-filter: blur(20px);
+        }
+        .tracking-stat { text-align: center; }
+        .tracking-stat-value { font-size: var(--text-xl); font-weight: 900; color: var(--primary-500); }
+        .tracking-stat-label { font-size: 0.625rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.25rem; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px); border-top: 1px solid var(--border-default);
+            padding: calc(0.5rem + var(--safe-bottom)) 1rem var(--safe-bottom);
+            display: flex; justify-content: space-around; z-index: var(--z-fixed);
+        }
+        [data-theme="dark"] .bottom-nav { background: rgba(11, 17, 32, 0.98); }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+            padding: 0.5rem 1rem; color: var(--text-muted);
+            text-decoration: none; cursor: pointer; border-radius: var(--radius-xl); position: relative;
+        }
+        .nav-item i { font-size: var(--text-xl); }
+        .nav-item span { font-size: 0.625rem; font-weight: 600; text-transform: uppercase; }
+        .nav-item.active { color: var(--primary-500); }
+        .nav-item.active i { transform: translateY(-3px); }
+        .nav-item.active::before {
+            content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+            width: 5px; height: 5px; background: var(--primary-500); border-radius: var(--radius-full);
+        }
+        .nav-item:hover { color: var(--text-secondary); background: var(--bg-tertiary); }
+
+        .gps-status {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+            background: var(--bg-tertiary); border-radius: var(--radius-xl);
+            margin-bottom: 1rem; border: 1px solid var(--border-default);
+        }
+        .gps-status.active { border-color: #10B981; background: rgba(16, 185, 129, 0.1); }
+        .gps-status.searching { border-color: #F59E0B; background: rgba(245, 158, 11, 0.1); }
+        .gps-status.error { border-color: #EF4444; background: rgba(239, 68, 68, 0.1); }
+        .gps-indicator { width: 12px; height: 12px; border-radius: var(--radius-full); background: var(--text-muted); position: relative; }
+        .gps-indicator.active { background: #10B981; }
+        .gps-indicator.active::after {
+            content: ''; position: absolute; inset: -5px; border: 2px solid #10B981;
+            border-radius: var(--radius-full); animation: pulse-ring 1.5s ease-out infinite;
+        }
+        .gps-indicator.searching { background: #F59E0B; animation: pulse 1s ease-in-out infinite; }
+        .gps-indicator.error { background: #EF4444; }
+        .gps-text { font-size: var(--text-sm); color: var(--text-secondary); font-weight: 600; }
+
+        /* Social Feed */
+        .post-card {
+            background: var(--bg-card); border: 1px solid var(--border-default);
+            border-radius: var(--radius-2xl); padding: 1.5rem; margin-bottom: 1.25rem;
+        }
+        .post-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .post-avatar {
+            width: 50px; height: 50px; border-radius: var(--radius-full);
+            background: var(--gradient-primary); display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white; overflow: hidden;
+        }
+        .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .post-info { flex: 1; }
+        .post-author { font-weight: 700; color: var(--text-primary); }
+        .post-time { font-size: var(--text-sm); color: var(--text-muted); }
+        .post-content { color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6; }
+        .post-image { width: 100%; border-radius: var(--radius-xl); margin-bottom: 1rem; max-height: 400px; object-fit: cover; }
+        .post-actions { display: flex; gap: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-default); }
+        .post-action { display: flex; align-items: center; gap: 0.5rem; color: var(--text-tertiary); cursor: pointer; transition: color var(--transition-fast); }
+        .post-action:hover { color: var(--primary-500); }
+        .post-action.liked { color: #EF4444; }
+
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed; bottom: calc(80px + var(--safe-bottom)); right: 1rem;
+            width: 380px; max-height: 500px; background: var(--bg-card);
+            border: 1px solid var(--border-default); border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl); z-index: var(--z-chat);
+            display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(20px);
+        }
+        .chat-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-default);
+        }
+        .chat-user-info { display: flex; align-items: center; gap: 0.75rem; }
+        .chat-user-avatar {
+            width: 40px; height: 40px; border-radius: var(--radius-full);
+            background: var(--gradient-primary); display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white; font-size: var(--text-sm); overflow: hidden;
+        }
+        .chat-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-user-name { font-weight: 600; font-size: var(--text-sm); }
+        .chat-user-status { font-size: 0.625rem; color: var(--success); }
+        .chat-user-status.offline { color: var(--text-muted); }
+        .chat-close {
+            background: none; border: none; color: var(--text-tertiary);
+            cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md);
+        }
+        .chat-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .chat-message { display: flex; gap: 0.5rem; max-width: 80%; }
+        .chat-message.sent { align-self: flex-end; flex-direction: row-reverse; }
+        .chat-message-content {
+            background: var(--bg-tertiary); padding: 0.75rem 1rem;
+            border-radius: var(--radius-xl); font-size: var(--text-sm); line-height: 1.5;
+        }
+        .chat-message.sent .chat-message-content { background: var(--gradient-primary); color: white; }
+        .chat-message-time { font-size: 0.625rem; color: var(--text-muted); margin-top: 0.25rem; }
+        .chat-input-container { display: flex; gap: 0.5rem; padding: 1rem; border-top: 1px solid var(--border-default); }
+        .chat-input {
+            flex: 1; padding: 0.75rem 1rem; background: var(--bg-tertiary);
+            border: 1px solid var(--border-default); border-radius: var(--radius-full);
+            color: var(--text-primary); font-size: var(--text-sm); font-family: var(--font-family);
+        }
+        .chat-input:focus { outline: none; border-color: var(--primary-500); }
+        .chat-send-btn {
+            width: 44px; height: 44px; border-radius: var(--radius-full);
+            background: var(--gradient-primary); border: none; color: white;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: transform var(--transition-fast);
+        }
+        .chat-send-btn:hover { transform: scale(1.08); }
+        .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Friend Requests */
+        .friend-request-card {
+            display: flex; align-items: center; gap: 1rem; padding: 1rem;
+            background: var(--bg-tertiary); border-radius: var(--radius-xl); margin-bottom: 0.75rem;
+        }
+        .friend-request-avatar {
+            width: 50px; height: 50px; border-radius: var(--radius-full);
+            background: var(--gradient-primary); display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white; overflow: hidden;
+        }
+        .friend-request-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .friend-request-info { flex: 1; }
+        .friend-request-name { font-weight: 600; color: var(--text-primary); }
+        .friend-request-actions { display: flex; gap: 0.5rem; }
+        .friend-request-btn {
+            padding: 0.5rem 1rem; border-radius: var(--radius-md);
+            font-size: var(--text-sm); font-weight: 600; cursor: pointer; border: none;
+        }
+        .friend-request-btn.accept { background: var(--success); color: white; }
+        .friend-request-btn.decline { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-default); }
+
+        /* Friends List */
+        .friend-item {
+            display: flex; align-items: center; gap: 1rem; padding: 1rem;
+            border-bottom: 1px solid var(--border-default); border-radius: var(--radius-lg);
+        }
+        .friend-item:last-child { border-bottom: none; }
+        .friend-item:hover { background: var(--bg-tertiary); margin: 0 -1rem; padding-left: 1rem; padding-right: 1rem; }
+        .friend-avatar {
+            width: 50px; height: 50px; border-radius: var(--radius-full);
+            background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: var(--primary-500); border: 2px solid var(--border-default);
+            flex-shrink: 0; overflow: hidden;
+        }
+        .friend-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .friend-info { flex: 1; min-width: 0; }
+        .friend-name { font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .friend-status { font-size: 0.625rem; color: var(--text-muted); }
+        .friend-status.online { color: var(--success); }
+
+        /* Profile */
+        .profile-header { text-align: center; padding: 2.5rem 1rem; background: var(--gradient-glow); }
+        .profile-avatar-container { position: relative; display: inline-block; cursor: pointer; }
+        .profile-avatar {
+            width: 120px; height: 120px; border-radius: var(--radius-full);
+            background: var(--gradient-primary); display: flex; align-items: center; justify-content: center;
+            font-size: var(--text-4xl); font-weight: 900; color: white;
+            margin: 0 auto 1rem; border: 5px solid var(--bg-secondary); overflow: hidden;
+        }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar:hover { transform: scale(1.08); }
+        .profile-avatar-edit {
+            position: absolute; bottom: 2px; right: 2px; width: 40px; height: 40px;
+            background: var(--bg-card); border: 3px solid var(--bg-secondary);
+            border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
+        }
+        .profile-avatar-edit:hover { background: var(--primary-500); color: white; }
+        .profile-name { font-size: var(--text-2xl); font-weight: 900; margin-bottom: 0.25rem; }
+        .profile-email { color: var(--text-tertiary); margin-bottom: 1rem; font-size: var(--text-sm); }
+        .profile-badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; max-width: 400px; margin: 0 auto; }
+        .badge {
+            background: var(--bg-tertiary); border: 1px solid var(--border-default);
+            border-radius: var(--radius-full); padding: 0.25rem 0.75rem;
+            font-size: 0.625rem; color: var(--text-secondary); display: flex;
+            align-items: center; gap: 0.25rem; font-weight: 600;
+        }
+        .badge i { color: var(--primary-500); }
+        .profile-actions { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap; }
+        .profile-action-btn {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem;
+            background: var(--bg-tertiary); border: 1px solid var(--border-default);
+            border-radius: var(--radius-xl); color: var(--text-secondary);
+            font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+        }
+        .profile-action-btn:hover { background: var(--bg-card); color: var(--text-primary); border-color: var(--primary-500); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+        .empty-state-icon { font-size: 4.5rem; margin-bottom: 1rem; opacity: 0.25; }
+        .empty-state-title { font-size: var(--text-lg); font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .empty-state-text { font-size: var(--text-sm); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: var(--bg-overlay);
+            backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center;
+            z-index: var(--z-modal); padding: 1rem;
+        }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--border-default);
+            border-radius: var(--radius-3xl); padding: 1.5rem;
+            max-width: 440px; width: 100%; max-height: 85vh; overflow-y: auto;
+            box-shadow: var(--shadow-2xl);
+        }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+        .modal-title { font-size: var(--text-xl); font-weight: 800; }
+        .modal-close {
+            background: none; border: none; color: var(--text-tertiary);
+            font-size: var(--text-xl); cursor: pointer; padding: 0.5rem;
+        }
+        .modal-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+
+        /* Language Selector */
+        .language-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 1rem; }
+        .language-option {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem;
+            background: var(--bg-tertiary); border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg); cursor: pointer; transition: all var(--transition-fast);
+        }
+        .language-option:hover { background: var(--bg-card); border-color: var(--primary-500); }
+        .language-option.selected { border-color: var(--primary-500); background: rgba(6, 182, 212, 0.1); }
+        .language-flag { font-size: var(--text-xl); }
+        .language-name { font-size: var(--text-sm); font-weight: 500; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed; top: calc(1rem + var(--safe-top)); right: 1rem;
+            z-index: var(--z-toast); display: flex; flex-direction: column; gap: 0.75rem;
+            max-width: 400px; pointer-events: none;
+        }
+        .toast {
+            background: var(--bg-card); border: 1px solid var(--border-default);
+            border-radius: var(--radius-xl); padding: 1rem;
+            display: flex; align-items: center; gap: 0.75rem;
+            box-shadow: var(--shadow-xl); animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px); min-width: 280px; pointer-events: auto;
+        }
+        .toast.success { border-left: 4px solid #10B981; background: rgba(16, 185, 129, 0.1); }
+        .toast.error { border-left: 4px solid #EF4444; background: rgba(239, 68, 68, 0.1); }
+        .toast.warning { border-left: 4px solid #F59E0B; background: rgba(245, 158, 11, 0.1); }
+        .toast.info { border-left: 4px solid #3B82F6; background: rgba(59, 130, 246, 0.1); }
+        .toast-icon { font-size: var(--text-xl); flex-shrink: 0; }
+        .toast.success .toast-icon { color: #10B981; }
+        .toast.error .toast-icon { color: #EF4444; }
+        .toast.warning .toast-icon { color: #F59E0B; }
+        .toast.info .toast-icon { color: #3B82F6; }
+        .toast-message { flex: 1; font-size: var(--text-sm); color: var(--text-secondary); font-weight: 500; }
+        .toast-close { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; }
+        .toast-close:hover { color: var(--text-primary); }
+
+        .loader { display: inline-block; width: 24px; height: 24px; border: 3px solid var(--border-default); border-top-color: var(--primary-500); border-radius: var(--radius-full); animation: spin 0.8s linear infinite; }
+
+        .leaflet-container { background: var(--bg-secondary); }
+        .leaflet-popup-content-wrapper { background: var(--bg-card); color: var(--text-primary); border-radius: var(--radius-xl); }
+        .leaflet-popup-tip { background: var(--bg-card); }
+        .leaflet-control-zoom { border: none !important; }
+        .leaflet-control-zoom a { background: var(--bg-card) !important; color: var(--text-primary) !important; border: 1px solid var(--border-default) !important; }
+        .custom-marker { background: var(--primary-500); border: 3px solid white; border-radius: 50%; width: 22px; height: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.4), 0 0 25px rgba(6, 182, 212, 0.6); }
+        .custom-marker.pulsing { animation: pulse-ring 1.5s ease-out infinite; }
+        .poi-marker { background: var(--primary-500); border: 3px solid white; border-radius: 50%; width: 24px; height: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.4), 0 0 25px rgba(6, 182, 212, 0.6); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
+
+        @media (max-width: 640px) {
+            .chat-widget { width: calc(100vw - 2rem); right: 1rem; left: 1rem; max-height: 60vh; }
+            .tracking-stats { gap: 1rem; padding: 0.75rem 1rem; bottom: calc(165px + var(--safe-bottom)); }
+            .tracking-stat-value { font-size: var(--text-lg); }
+            .tracking-btn { width: 68px; height: 68px; }
+            .modal { margin: 1rem; max-height: 90vh; border-radius: var(--radius-2xl); }
+            .toast { min-width: auto; max-width: calc(100vw - 2rem); }
+            .toast-container { left: 1rem; right: 1rem; }
+            .profile-avatar { width: 100px; height: 100px; font-size: var(--text-3xl); }
+        }
+        @media (min-width: 768px) {
+            .auth-container { padding: 2.5rem; }
+            .tracking-stats { gap: 2rem; }
+            .bottom-nav { max-width: 500px; left: 50%; transform: translateX(-50%); border-radius: var(--radius-3xl) var(--radius-3xl) 0 0; }
+        }
+        :focus-visible { outline: 2px solid var(--primary-500); outline-offset: 2px; }
+    </style>
+</head>
+<body>
+    <!-- LANDING SCREEN -->
+    <div id="landing-screen">
+        <div class="landing-hero">
+            <div class="landing-logo animate-float">
+                <div class="landing-logo-icon"><i class="fas fa-feather-pointed"></i></div>
+            </div>
+            <h1 class="landing-title">MILEON</h1>
+            <p class="landing-tagline">Trackez vos performances, dépassez vos limites et partagez votre passion.</p>
+            <div class="landing-cta">
+                <button class="btn btn-primary" id="btn-start-adventure"><i class="fas fa-rocket"></i> Commencer l'aventure</button>
+                <button class="btn btn-secondary" id="btn-register-landing"><i class="fas fa-user-plus"></i> Créer un compte gratuit</button>
+                <button class="btn btn-guest" id="btn-guest"><i class="fas fa-user-secret"></i> Continuer en tant qu'invité</button>
+                <button class="btn btn-google" id="btn-google-signin"><i class="fab fa-google"></i> Continuer avec Google</button>
+            </div>
+            <div class="landing-stats" style="display: flex; justify-content: center; gap: 2rem; margin-top: 2.5rem; flex-wrap: wrap;">
+                <div class="stat-item" style="text-align: center;"><div class="stat-value">50K+</div><div class="stat-label">Utilisateurs</div></div>
+                <div class="stat-item" style="text-align: center;"><div class="stat-value">1M+</div><div class="stat-label">Kilomètres</div></div>
+                <div class="stat-item" style="text-align: center;"><div class="stat-value">100+</div><div class="stat-label">Pays</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="hidden">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="auth-logo"><i class="fas fa-feather-pointed"></i></div>
+                <h1 class="auth-title">Bienvenue sur Mileon</h1>
+                <p class="auth-subtitle">Connectez-vous pour commencer à tracker</p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">Email</label>
+                    <div class="form-input-wrapper">
+                        <input type="email" id="login-email" class="form-input" placeholder="votre@email.com" required>
+                        <i class="fas fa-envelope form-input-icon"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Mot de passe</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+                        <i class="fas fa-lock form-input-icon"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="login-btn"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+            </form>
+            <form id="register-form" class="hidden">
+                <div class="form-group">
+                    <label class="form-label" for="register-name">Nom complet</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" id="register-name" class="form-input" placeholder="Jean Dupont" required>
+                        <i class="fas fa-user form-input-icon"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="register-username">Pseudo</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" id="register-username" class="form-input" placeholder="@jeandupont" required>
+                        <i class="fas fa-at form-input-icon"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="register-email">Email</label>
+                    <div class="form-input-wrapper">
+                        <input type="email" id="register-email" class="form-input" placeholder="votre@email.com" required>
+                        <i class="fas fa-envelope form-input-icon"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="register-password">Mot de passe</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" id="register-password" class="form-input" placeholder="••••••••" minlength="6" required>
+                        <i class="fas fa-lock form-input-icon"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="register-confirm">Confirmer le mot de passe</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" id="register-confirm" class="form-input" placeholder="••••••••" minlength="6" required>
+                        <i class="fas fa-lock form-input-icon"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="register-btn"><i class="fas fa-user-plus"></i> Créer mon compte</button>
+            </form>
+            <div class="auth-divider">ou continuer avec</div>
+            <button class="btn btn-google" id="btn-google-auth"><i class="fab fa-google"></i> Continuer avec Google</button>
+            <div class="auth-switch">
+                <span id="auth-switch-text">Pas encore de compte ?</span>
+                <a href="#" id="auth-switch-link">S'inscrire</a>
+            </div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button class="btn btn-ghost" id="btn-back-landing"><i class="fas fa-arrow-left"></i> Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SCREEN -->
+    <div id="app-screen" class="hidden">
+        <header class="app-header">
+            <div class="header-logo">
+                <div class="header-logo-icon"><i class="fas fa-feather-pointed"></i></div>
+                <span class="header-logo-text">MILEON</span>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+                <button class="header-btn" id="chat-toggle-btn"><i class="fas fa-comment"></i><span class="badge hidden" id="chat-badge"></span></button>
+                <div class="user-avatar" id="header-avatar"></div>
+            </div>
+        </header>
+        <main class="app-main">
+            <!-- Dashboard -->
+            <section id="view-dashboard" class="view-section">
+                <div class="card">
+                    <div class="card-header"><div><h2 class="card-title">Cette semaine</h2><p class="card-subtitle">Résumé de vos activités</p></div></div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-route"></i></div><div class="stat-value" id="stat-distance">0</div><div class="stat-label">Kilomètres</div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-value" id="stat-duration">0</div><div class="stat-label">Heures</div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-fire"></i></div><div class="stat-value" id="stat-calories">0</div><div class="stat-label">Calories</div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-trophy"></i></div><div class="stat-value" id="stat-activities">0</div><div class="stat-label">Activités</div></div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-header"><h3 class="card-title">Progression</h3></div><div style="height: 220px;"><canvas id="progress-chart"></canvas></div></div>
+            </section>
+            <!-- Social -->
+            <section id="view-social" class="view-section hidden">
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">Fil d'actualité</h3><button class="btn btn-primary btn-icon" id="btn-create-post"><i class="fas fa-plus"></i></button></div>
+                    <div id="social-feed"></div>
+                </div>
+                <div class="card"><div class="card-header"><h3 class="card-title">Demandes d'amis</h3></div><div id="friend-requests"></div></div>
+                <div class="card"><div class="card-header"><h3 class="card-title">Amis</h3><button class="btn btn-secondary btn-icon" id="btn-add-friend"><i class="fas fa-user-plus"></i></button></div><div id="friends-list"></div></div>
+            </section>
+            <!-- Messages -->
+            <section id="view-messages" class="view-section hidden">
+                <div class="card"><div class="card-header"><h3 class="card-title">Messages</h3></div><div id="conversations-list"></div></div>
+            </section>
+            <!-- Track -->
+            <section id="view-track" class="view-section hidden">
+                <div class="gps-status" id="gps-status"><div class="gps-indicator" id="gps-indicator"></div><span class="gps-text" id="gps-text">En attente GPS...</span></div>
+                <div id="map-container"><div id="map"></div><div class="map-overlay"><button class="map-btn" id="center-map-btn"><i class="fas fa-crosshairs"></i></button><button class="map-btn" id="fullscreen-btn"><i class="fas fa-expand"></i></button><button class="map-btn" id="spots-btn"><i class="fas fa-map-marker-alt"></i></button></div></div>
+                <div class="tracking-stats hidden" id="tracking-stats">
+                    <div class="tracking-stat"><div class="tracking-stat-value" id="track-distance">0.00</div><div class="tracking-stat-label">km</div></div>
+                    <div class="tracking-stat"><div class="tracking-stat-value" id="track-time">00:00</div><div class="tracking-stat-label">Temps</div></div>
+                    <div class="tracking-stat"><div class="tracking-stat-value" id="track-pace">--:--</div><div class="tracking-stat-label">Allure</div></div>
+                    <div class="tracking-stat"><div class="tracking-stat-value" id="track-speed">0.0</div><div class="tracking-stat-label">km/h</div></div>
+                </div>
+                <div class="tracking-controls">
+                    <button class="tracking-btn start" id="start-btn"><i class="fas fa-play"></i></button>
+                    <button class="tracking-btn stop hidden" id="stop-btn"><i class="fas fa-stop"></i></button>
+                </div>
+            </section>
+            <!-- Profile -->
+            <section id="view-profile" class="view-section hidden">
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <div class="profile-header">
+                        <div class="profile-avatar-container" id="btn-edit-profile"><div class="profile-avatar" id="profile-avatar"></div><div class="profile-avatar-edit"><i class="fas fa-camera"></i></div></div>
+                        <h2 class="profile-name" id="profile-name">Utilisateur</h2>
+                        <p class="profile-email" id="profile-email"></p>
+                        <div class="profile-badges" id="profile-badges"></div>
+                        <div class="profile-actions">
+                            <button class="profile-action-btn" id="btn-edit-profile-2"><i class="fas fa-pen"></i> Modifier</button>
+                            <button class="profile-action-btn" id="btn-settings"><i class="fas fa-cog"></i> Paramètres</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-header"><h3 class="card-title">Statistiques totales</h3></div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-route"></i></div><div class="stat-value" id="total-distance">0</div><div class="stat-label">km totaux</div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-value" id="total-time">0</div><div class="stat-label">heures</div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-fire"></i></div><div class="stat-value" id="total-calories">0</div><div class="stat-label">calories</div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar"></i></div><div class="stat-value" id="total-days">0</div><div class="stat-label">jours actifs</div></div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary w-full" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+            </section>
+        </main>
+        <nav class="bottom-nav">
+            <a class="nav-item active" data-view="dashboard" id="nav-dashboard"><i class="fas fa-home"></i><span>Accueil</span></a>
+            <a class="nav-item" data-view="social" id="nav-social"><i class="fas fa-users"></i><span>Social</span></a>
+            <a class="nav-item" data-view="messages" id="nav-messages"><i class="fas fa-comment"></i><span>Messages</span></a>
+            <a class="nav-item" data-view="track" id="nav-track"><i class="fas fa-map-marked-alt"></i><span>Tracker</span></a>
+            <a class="nav-item" data-view="profile" id="nav-profile"><i class="fas fa-user"></i><span>Profil</span></a>
+        </nav>
+    </div>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget" class="chat-widget hidden">
+        <div class="chat-header">
+            <div class="chat-user-info">
+                <div class="chat-user-avatar" id="chat-user-avatar"></div>
+                <div><div class="chat-user-name" id="chat-user-name"></div><div class="chat-user-status" id="chat-user-status">● En ligne</div></div>
+            </div>
+            <button class="chat-close" id="chat-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Écrivez un message...">
+            <button class="chat-send-btn" id="chat-send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="edit-profile-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header"><h3 class="modal-title">Modifier mon profil</h3><button class="modal-close" id="close-edit-profile">&times;</button></div>
+            <form id="edit-profile-form">
+                <div class="form-group"><label class="form-label">Photo de profil</label><div class="photo-upload" id="btn-upload-photo" style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;padding:1.5rem;background:var(--bg-tertiary);border:2px dashed var(--border-default);border-radius:var(--radius-xl);cursor:pointer;"><div class="photo-upload-icon" style="width:60px;height:60px;background:var(--gradient-primary);border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;color:white;font-size:var(--text-2xl);"><i class="fas fa-camera"></i></div><p class="photo-upload-text" style="font-size:var(--text-sm);color:var(--text-secondary);text-align:center;">Cliquez pour uploader une photo</p><input type="file" id="profile-photo-input" accept="image/*" class="hidden"></div></div>
+                <div class="form-group"><label class="form-label" for="edit-name">Nom complet</label><div class="form-input-wrapper"><input type="text" id="edit-name" class="form-input" required><i class="fas fa-user form-input-icon"></i></div></div>
+                <div class="form-group"><label class="form-label" for="edit-username">Pseudo</label><div class="form-input-wrapper"><input type="text" id="edit-username" class="form-input" placeholder="@username"><i class="fas fa-at form-input-icon"></i></div></div>
+                <div class="form-group"><label class="form-label" for="edit-bio">Bio</label><div class="form-input-wrapper"><input type="text" id="edit-bio" class="form-input" placeholder="Quelques mots sur vous..."><i class="fas fa-quote-left form-input-icon"></i></div></div>
+                <button type="submit" class="btn btn-primary w-full"><i class="fas fa-save"></i> Enregistrer</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header"><h3 class="modal-title">Paramètres</h3><button class="modal-close" id="close-settings">&times;</button></div>
+            <div class="form-group"><label class="form-label">Langue</label><div class="language-selector" id="language-selector"><div class="language-option" data-lang="fr"><span class="language-flag">🇫🇷</span><span class="language-name">Français</span></div><div class="language-option" data-lang="en"><span class="language-flag">🇺🇸</span><span class="language-name">English</span></div><div class="language-option" data-lang="es"><span class="language-flag">🇪</span><span class="language-name">Español</span></div><div class="language-option" data-lang="ar"><span class="language-flag">🇸</span><span class="language-name">العربية</span></div><div class="language-option" data-lang="zh"><span class="language-flag">🇨🇳</span><span class="language-name">中文</span></div><div class="language-option" data-lang="hi"><span class="language-flag">🇮🇳</span><span class="language-name">हिन्दी</span></div></div></div>
+            <div class="form-group"><label class="form-label">Thème</label><select id="settings-theme" class="form-input" style="padding-left:1rem;"><option value="light">Clair</option><option value="dark">Sombre</option></select></div>
+            <div class="flex gap-2" style="margin-top:1.5rem;"><button class="btn btn-primary w-full" id="btn-save-settings"><i class="fas fa-save"></i> Enregistrer</button></div>
+        </div>
+    </div>
+
+    <div id="add-friend-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header"><h3 class="modal-title">Ajouter un ami</h3><button class="modal-close" id="close-add-friend">&times;</button></div>
+            <form id="add-friend-form">
+                <div class="form-group"><label class="form-label" for="friend-search">Email ou pseudo</label><div class="form-input-wrapper"><input type="text" id="friend-search" class="form-input" placeholder="email@ou @pseudo" required><i class="fas fa-search form-input-icon"></i></div></div>
+                <button type="submit" class="btn btn-primary w-full"><i class="fas fa-user-plus"></i> Envoyer la demande</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="create-post-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header"><h3 class="modal-title">Créer un post</h3><button class="modal-close" id="close-create-post">&times;</button></div>
+            <form id="create-post-form">
+                <div class="form-group"><label class="form-label">Contenu</label><textarea id="post-content" class="form-input" rows="4" placeholder="Partagez votre activité..." style="width:100%;resize:vertical;"></textarea></div>
+                <div class="form-group"><label class="form-label">Image (optionnel)</label><input type="file" id="post-image-input" accept="image/*" class="form-input"></div>
+                <button type="submit" class="btn btn-primary w-full"><i class="fas fa-paper-plane"></i> Publier</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    
+    <script>
+        // ============================================
+        // MILEON APP - DEFINITION IMMEDIATE
+        // ============================================
+        const MileonApp = {
+            currentUser: null, isGuest: false, currentView: 'dashboard', isTracking: false,
+            watchId: null, trackData: { startTime: null, endTime: null, positions: [], distance: 0, duration: 0 },
+            map: null, marker: null, polyline: null, progressChart: null, trackTimer: null,
+            selectedAvatarColor: 'linear-gradient(135deg, #06B6D4 0%, #22D3EE 100%)',
+            uploadedPhoto: null, isDarkMode: false, currentLang: 'fr',
+            GOOGLE_CLIENT_ID: '382897863941-ca0rsob40rsifbgcg2jgo49hj2fignps.apps.googleusercontent.com',
+            currentChat: null, messageCheckInterval: null,
+
+            init() {
+                console.log('🏃 Mileon Social initializing...');
+                this.bindEvents();
+                this.initTheme();
+                this.checkAuth();
+                this.loadUsers();
+                this.startMessageListener();
+                this.updateUserOnlineStatus();
+                console.log('✅ Mileon App ready!');
+            },
+
+            bindEvents() {
+                // LANDING BUTTONS
+                document.getElementById('btn-start-adventure')?.addEventListener('click', () => this.navigateToAuth('login'));
+                document.getElementById('btn-register-landing')?.addEventListener('click', () => this.navigateToAuth('register'));
+                document.getElementById('btn-guest')?.addEventListener('click', () => this.continueAsGuest());
+                document.getElementById('btn-google-signin')?.addEventListener('click', () => this.handleGoogleSignIn());
+
+                // AUTH BUTTONS
+                document.getElementById('login-form')?.addEventListener('submit', (e) => { e.preventDefault(); this.login(); });
+                document.getElementById('register-form')?.addEventListener('submit', (e) => { e.preventDefault(); this.register(); });
+                document.getElementById('auth-switch-link')?.addEventListener('click', (e) => { e.preventDefault(); this.toggleAuthForm(); });
+                document.getElementById('btn-back-landing')?.addEventListener('click', () => this.navigateToLanding());
+                document.getElementById('btn-google-auth')?.addEventListener('click', () => this.handleGoogleSignIn());
+
+                // NAVIGATION
+                document.getElementById('nav-dashboard')?.addEventListener('click', () => this.navigate('dashboard'));
+                document.getElementById('nav-social')?.addEventListener('click', () => this.navigate('social'));
+                document.getElementById('nav-messages')?.addEventListener('click', () => this.navigate('messages'));
+                document.getElementById('nav-track')?.addEventListener('click', () => this.navigate('track'));
+                document.getElementById('nav-profile')?.addEventListener('click', () => this.navigate('profile'));
+
+                // HEADER
+                document.getElementById('theme-toggle')?.addEventListener('click', () => this.toggleTheme());
+                document.getElementById('chat-toggle-btn')?.addEventListener('click', () => this.toggleChatWidget());
+                document.getElementById('header-avatar')?.addEventListener('click', () => this.navigate('profile'));
+
+                // TRACKING
+                document.getElementById('start-btn')?.addEventListener('click', () => this.startTracking());
+                document.getElementById('stop-btn')?.addEventListener('click', () => this.stopTracking());
+                document.getElementById('center-map-btn')?.addEventListener('click', () => this.centerMap());
+                document.getElementById('fullscreen-btn')?.addEventListener('click', () => this.toggleFullscreen());
+                document.getElementById('spots-btn')?.addEventListener('click', () => this.showSportsSpots());
+
+                // PROFILE
+                document.getElementById('btn-edit-profile')?.addEventListener('click', () => this.showEditProfileModal());
+                document.getElementById('btn-edit-profile-2')?.addEventListener('click', () => this.showEditProfileModal());
+                document.getElementById('btn-settings')?.addEventListener('click', () => this.showSettingsModal());
+                document.getElementById('btn-logout')?.addEventListener('click', () => this.logout());
+
+                // SOCIAL
+                document.getElementById('btn-create-post')?.addEventListener('click', () => this.showCreatePostModal());
+                document.getElementById('btn-add-friend')?.addEventListener('click', () => this.showAddFriendModal());
+
+                // MODALS
+                document.getElementById('close-edit-profile')?.addEventListener('click', () => document.getElementById('edit-profile-modal').classList.add('hidden'));
+                document.getElementById('close-settings')?.addEventListener('click', () => document.getElementById('settings-modal').classList.add('hidden'));
+                document.getElementById('close-add-friend')?.addEventListener('click', () => document.getElementById('add-friend-modal').classList.add('hidden'));
+                document.getElementById('close-create-post')?.addEventListener('click', () => document.getElementById('create-post-modal').classList.add('hidden'));
+                document.getElementById('btn-save-settings')?.addEventListener('click', () => this.saveSettings());
+
+                // FORMS
+                document.getElementById('edit-profile-form')?.addEventListener('submit', (e) => { e.preventDefault(); this.saveProfile(); });
+                document.getElementById('add-friend-form')?.addEventListener('submit', (e) => { e.preventDefault(); this.sendFriendRequest(); });
+                document.getElementById('create-post-form')?.addEventListener('submit', (e) => { e.preventDefault(); this.createPost(); });
+
+                // PHOTO UPLOAD
+                document.getElementById('btn-upload-photo')?.addEventListener('click', () => document.getElementById('profile-photo-input').click());
+                document.getElementById('profile-photo-input')?.addEventListener('change', (e) => this.handlePhotoUpload(e.target));
+
+                // CHAT
+                document.getElementById('chat-close')?.addEventListener('click', () => this.toggleChatWidget());
+                document.getElementById('chat-send')?.addEventListener('click', () => this.sendMessage());
+                document.getElementById('chat-input')?.addEventListener('keypress', (e) => { if(e.key === 'Enter') this.sendMessage(); });
+
+                // LANGUAGE
+                document.querySelectorAll('.language-option').forEach(opt => {
+                    opt.addEventListener('click', () => this.setLanguage(opt.dataset.lang));
+                });
+
+                console.log('✅ All events bound');
+            },
+
+            initTheme() {
+                this.isDarkMode = localStorage.getItem('mileon_theme') === 'dark';
+                this.applyTheme();
+            },
+
+            applyTheme() {
+                document.documentElement.setAttribute('data-theme', this.isDarkMode ? 'dark' : 'light');
+                const themeBtn = document.getElementById('theme-toggle');
+                if (themeBtn) themeBtn.innerHTML = this.isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                const themeSelect = document.getElementById('settings-theme');
+                if (themeSelect) themeSelect.value = this.isDarkMode ? 'dark' : 'light';
+            },
+
+            toggleTheme() {
+                this.isDarkMode = !this.isDarkMode;
+                localStorage.setItem('mileon_theme', this.isDarkMode ? 'dark' : 'light');
+                this.applyTheme();
+                this.showToast('info', this.isDarkMode ? 'Mode sombre activé' : 'Mode clair activé');
+            },
+
+            setLanguage(lang) {
+                this.currentLang = lang;
+                localStorage.setItem('mileon_language', lang);
+                this.showToast('success', `Langue changée: ${lang.toUpperCase()}`);
+                document.querySelectorAll('.language-option').forEach(opt => {
+                    opt.classList.toggle('selected', opt.dataset.lang === lang);
+                });
+            },
+
+            checkAuth() {
+                const session = localStorage.getItem('mileon_session');
+                const guestSession = localStorage.getItem('mileon_guest');
+                if (session) {
+                    try { this.currentUser = JSON.parse(session); this.showApp(); }
+                    catch (e) { localStorage.removeItem('mileon_session'); this.showLanding(); }
+                } else if (guestSession) {
+                    this.currentUser = JSON.parse(guestSession); this.isGuest = true; this.showApp();
+                } else { this.showLanding(); }
+            },
+
+            showLanding() {
+                document.getElementById('landing-screen').classList.remove('hidden');
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.add('hidden');
+            },
+
+            showAuth() {
+                document.getElementById('landing-screen').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('app-screen').classList.add('hidden');
+            },
+
+            showApp() {
+                document.getElementById('landing-screen').classList.add('hidden');
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                this.updateHeaderAvatar();
+                this.updateDashboard();
+                this.updateProfile();
+                this.updateSocial();
+                this.updateMessageBadge();
+            },
+
+            navigateToAuth(mode = 'login') {
+                this.showAuth();
+                if (mode === 'register') {
+                    document.getElementById('login-form').classList.add('hidden');
+                    document.getElementById('register-form').classList.remove('hidden');
+                    document.getElementById('auth-switch-text').textContent = 'Déjà un compte ?';
+                    document.getElementById('auth-switch-link').textContent = 'Se connecter';
+                } else {
+                    document.getElementById('login-form').classList.remove('hidden');
+                    document.getElementById('register-form').classList.add('hidden');
+                    document.getElementById('auth-switch-text').textContent = 'Pas encore de compte ?';
+                    document.getElementById('auth-switch-link').textContent = "S'inscrire";
+                }
+            },
+
+            navigateToLanding() { this.showLanding(); },
+
+            continueAsGuest() {
+                const guestUser = { id: 'guest_' + Date.now(), name: 'Invité', username: '@guest', email: 'guest@mileon.app', isGuest: true, avatarColor: this.selectedAvatarColor, photo: null, bio: '' };
+                this.currentUser = guestUser; this.isGuest = true;
+                localStorage.setItem('mileon_guest', JSON.stringify(guestUser));
+                this.showToast('success', 'Mode invité activé');
+                this.showApp();
+            },
+
+            toggleAuthForm() {
+                const loginForm = document.getElementById('login-form');
+                const registerForm = document.getElementById('register-form');
+                if (loginForm.classList.contains('hidden')) {
+                    loginForm.classList.remove('hidden'); registerForm.classList.add('hidden');
+                    document.getElementById('auth-switch-text').textContent = 'Pas encore de compte ?';
+                    document.getElementById('auth-switch-link').textContent = "S'inscrire";
+                } else {
+                    loginForm.classList.add('hidden'); registerForm.classList.remove('hidden');
+                    document.getElementById('auth-switch-text').textContent = 'Déjà un compte ?';
+                    document.getElementById('auth-switch-link').textContent = 'Se connecter';
+                }
+            },
+
+            navigate(view) {
+                this.currentView = view;
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.view === view));
+                document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+                document.getElementById(`view-${view}`).classList.remove('hidden');
+                if (view === 'track') setTimeout(() => { this.initMap(); if (this.map) this.map.invalidateSize(); }, 100);
+                else if (view === 'social') this.updateSocial();
+                else if (view === 'messages') this.updateMessages();
+                else if (view === 'dashboard') this.updateDashboard();
+                else if (view === 'profile') this.updateProfile();
+                document.querySelector('.app-main').scrollTop = 0;
+            },
+
+            login() {
+                const btn = document.getElementById('login-btn');
+                if (!btn || btn.disabled) return;
+                btn.disabled = true; btn.classList.add('loading');
+                setTimeout(() => {
+                    const email = document.getElementById('login-email').value.trim().toLowerCase();
+                    const password = document.getElementById('login-password').value;
+                    const hashedPassword = this.hashPassword(password);
+                    const users = this.getUsers();
+                    const user = users.find(u => u.email === email && u.password === hashedPassword);
+                    if (user) {
+                        this.currentUser = { ...user, password: undefined };
+                        localStorage.setItem('mileon_session', JSON.stringify(this.currentUser));
+                        this.showToast('success', `Bon retour ${user.name.split(' ')[0]} !`);
+                        this.showApp();
+                    } else { this.showToast('error', 'Email ou mot de passe incorrect'); }
+                    btn.disabled = false; btn.classList.remove('loading');
+                }, 800);
+            },
+
+            register() {
+                const btn = document.getElementById('register-btn');
+                if (!btn || btn.disabled) return;
+                btn.disabled = true; btn.classList.add('loading');
+                setTimeout(() => {
+                    const name = document.getElementById('register-name').value.trim();
+                    const username = document.getElementById('register-username').value.trim();
+                    const email = document.getElementById('register-email').value.trim().toLowerCase();
+                    const password = document.getElementById('register-password').value;
+                    const confirm = document.getElementById('register-confirm').value;
+                    if (password !== confirm) { this.showToast('error', 'Les mots de passe ne correspondent pas'); btn.disabled = false; btn.classList.remove('loading'); return; }
+                    const users = this.getUsers();
+                    if (users.find(u => u.email === email)) { this.showToast('error', 'Cet email est déjà utilisé'); btn.disabled = false; btn.classList.remove('loading'); return; }
+                    const newUser = { id: Date.now().toString(), name, username: username.startsWith('@') ? username : '@' + username, email, password: this.hashPassword(password), createdAt: new Date().toISOString(), lastLogin: Date.now(), isOnline: true, lastOnline: Date.now(), friends: [], friendRequests: [], posts: [], badges: ['Débutant'], bio: '', photo: null, avatarColor: this.selectedAvatarColor };
+                    users.push(newUser); this.saveUsers(users);
+                    this.currentUser = { ...newUser, password: undefined };
+                    localStorage.setItem('mileon_session', JSON.stringify(this.currentUser));
+                    this.showToast('success', 'Compte créé avec succès ! Bienvenue 🎉');
+                    this.showApp();
+                }, 1000);
+            },
+
+            logout() {
+                if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                    if (!this.isGuest) { const users = this.getUsers(); const idx = users.findIndex(u => u.id === this.currentUser.id); if (idx !== -1) { users[idx].isOnline = false; users[idx].lastOnline = Date.now(); this.saveUsers(users); } }
+                    this.stopTracking(); this.currentUser = null; this.isGuest = false;
+                    localStorage.removeItem('mileon_session'); localStorage.removeItem('mileon_guest');
+                    this.showLanding(); this.showToast('info', 'Déconnecté avec succès');
+                }
+            },
+
+            handleGoogleSignIn() {
+                if (window.google && window.google.accounts) {
+                    window.google.accounts.id.initialize({ client_id: this.GOOGLE_CLIENT_ID, callback: (response) => this.handleGoogleCredentialResponse(response) });
+                    window.google.accounts.id.prompt();
+                } else { this.showToast('error', 'Google Sign-In non disponible'); }
+            },
+
+            handleGoogleCredentialResponse(response) {
+                try {
+                    const userInfo = JSON.parse(atob(response.credential.split('.')[1]));
+                    const googleUser = { id: 'google_' + userInfo.sub, name: userInfo.name, username: '@' + userInfo.name.replace(' ', '').toLowerCase(), email: userInfo.email, photo: userInfo.picture, avatarColor: this.selectedAvatarColor, isGoogle: true, isOnline: true, lastOnline: Date.now(), friends: [], friendRequests: [], posts: [], badges: ['Débutant'], bio: '' };
+                    const users = this.getUsers();
+                    let existingUser = users.find(u => u.email === googleUser.email);
+                    if (!existingUser) { googleUser.createdAt = new Date().toISOString(); googleUser.lastLogin = Date.now(); users.push(googleUser); this.saveUsers(users); this.showToast('success', 'Compte créé avec Google !'); }
+                    else { existingUser.isOnline = true; existingUser.lastOnline = Date.now(); this.saveUsers(users); this.showToast('success', `Bon retour ${userInfo.name} !`); googleUser = existingUser; }
+                    this.currentUser = { ...googleUser };
+                    localStorage.setItem('mileon_session', JSON.stringify(this.currentUser));
+                    this.showApp();
+                } catch (error) { this.showToast('error', 'Erreur de connexion Google'); }
+            },
+
+            hashPassword(password) { let hash = 0; for (let i = 0; i < password.length; i++) { const char = password.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash = hash & hash; } return Math.abs(hash).toString(16) + 'mileon_salt_' + password.length; },
+            getUsers() { const users = localStorage.getItem('mileon_users'); return users ? JSON.parse(users) : []; },
+            saveUsers(users) { localStorage.setItem('mileon_users', JSON.stringify(users)); },
+            getUserById(userId) { return this.getUsers().find(u => u.id === userId); },
+            getUserByUsername(username) { return this.getUsers().find(u => u.username === username || u.username === '@' + username); },
+            getUserByEmail(email) { return this.getUsers().find(u => u.email === email); },
+
+            // FRIEND SYSTEM
+            sendFriendRequest() {
+                const searchInput = document.getElementById('friend-search').value.trim();
+                if (!searchInput) { this.showToast('error', 'Veuillez entrer un email ou un pseudo'); return; }
+                let targetUser = searchInput.includes('@') ? this.getUserByUsername(searchInput) : this.getUserByEmail(searchInput);
+                if (!targetUser) { this.showToast('error', 'Utilisateur non trouvé'); return; }
+                if (targetUser.id === this.currentUser.id) { this.showToast('error', 'Vous ne pouvez pas vous ajouter vous-même'); document.getElementById('add-friend-modal').classList.add('hidden'); return; }
+                const users = this.getUsers();
+                const userIndex = users.findIndex(u => u.id === this.currentUser.id);
+                const targetIndex = users.findIndex(u => u.id === targetUser.id);
+                if (userIndex === -1 || targetIndex === -1) { this.showToast('error', 'Erreur utilisateur'); return; }
+                if (users[userIndex].friends && users[userIndex].friends.includes(targetUser.id)) { this.showToast('info', 'Déjà ami avec cet utilisateur'); document.getElementById('add-friend-modal').classList.add('hidden'); return; }
+                if (targetUser.friendRequests && targetUser.friendRequests.includes(this.currentUser.id)) { this.showToast('info', 'Demande déjà envoyée'); document.getElementById('add-friend-modal').classList.add('hidden'); return; }
+                if (!users[targetIndex].friendRequests) users[targetIndex].friendRequests = [];
+                users[targetIndex].friendRequests.push(this.currentUser.id);
+                this.saveUsers(users);
+                this.showToast('success', `Demande d'ami envoyée à ${targetUser.name}`);
+                document.getElementById('add-friend-modal').classList.add('hidden');
+                document.getElementById('add-friend-form').reset();
+            },
+
+            acceptFriendRequest(requesterId) {
+                const users = this.getUsers();
+                const userIndex = users.findIndex(u => u.id === this.currentUser.id);
+                const requesterIndex = users.findIndex(u => u.id === requesterId);
+                if (userIndex === -1 || requesterIndex === -1) return;
+                if (!users[userIndex].friends) users[userIndex].friends = [];
+                if (!users[requesterIndex].friends) users[requesterIndex].friends = [];
+                users[userIndex].friends.push(requesterId);
+                users[requesterIndex].friends.push(this.currentUser.id);
+                users[userIndex].friendRequests = users[userIndex].friendRequests.filter(id => id !== requesterId);
+                this.saveUsers(users);
+                this.currentUser = { ...users[userIndex] };
+                localStorage.setItem('mileon_session', JSON.stringify(this.currentUser));
+                this.showToast('success', 'Demande acceptée !');
+                this.updateSocial();
+            },
+
+            declineFriendRequest(requesterId) {
+                const users = this.getUsers();
+                const userIndex = users.findIndex(u => u.id === this.currentUser.id);
+                if (userIndex === -1) return;
+                users[userIndex].friendRequests = users[userIndex].friendRequests.filter(id => id !== requesterId);
+                this.saveUsers(users);
+                this.currentUser = { ...users[userIndex] };
+                localStorage.setItem('mileon_session', JSON.stringify(this.currentUser));
+                this.showToast('info', 'Demande refusée');
+                this.updateSocial();
+            },
+
+            removeFriend(friendId) {
+                if (!confirm('Voulez-vous vraiment supprimer cet ami ?')) return;
+                const users = this.getUsers();
+                const userIndex = users.findIndex(u => u.id === this.currentUser.id);
+                const friendIndex = users.findIndex(u => u.id === friendId);
+                if (userIndex === -1 || friendIndex === -1) return;
+                users[userIndex].friends = users[userIndex].friends.filter(id => id !== friendId);
+                users[friendIndex].friends = users[friendIndex].friends.filter(id => id !== this.currentUser.id);
+                this.saveUsers(users);
+                this.currentUser = { ...users[userIndex] };
+                localStorage.setItem('mileon_session', JSON.stringify(this.currentUser));
+                this.showToast('info', 'Ami supprimé');
+                this.updateSocial();
+            },
+
+            // MESSAGING
+            toggleChatWidget() { document.getElementById('chat-widget').classList.toggle('hidden'); },
+            openChat(userId) {
+                const user = this.getUserById(userId);
+                if (!user) return;
+                this.currentChat = userId;
+                document.getElementById('chat-user-name').textContent = user.name;
+                document.getElementById('chat-user-avatar').innerHTML = user.photo ? `<img src="${user.photo}" alt="${user.name}">` : this.getInitials(user.name);
+                const isOnline = user.isOnline || (Date.now() - user.lastOnline < 300000);
+                document.getElementById('chat-user-status').textContent = isOnline ? '● En ligne' : '● Hors ligne';
+                document.getElementById('chat-user-status').className = 'chat-user-status' + (isOnline ? '' : ' offline');
+                this.loadMessages(userId);
+                this.toggleChatWidget();
+            },
+            loadMessages(userId) {
+                const messages = this.getMessages(this.currentUser.id, userId);
+                const container = document.getElementById('chat-messages');
+                if (messages.length === 0) { container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Aucun message</p></div>'; return; }
+                container.innerHTML = messages.map(msg => `<div class="chat-message ${msg.senderId === this.currentUser.id ? 'sent' : ''}"><div class="chat-message-content">${msg.content}<div class="chat-message-time">${this.formatMessageTime(msg.timestamp)}</div></div></div>`).join('');
+                container.scrollTop = container.scrollHeight;
+            },
+            sendMessage() {
+                const input = document.getElementById('chat-input');
+                const content = input.value.trim();
+                if (!content || !this.currentChat) return;
+                const message = { id: Date.now().toString(), senderId: this.currentUser.id, receiverId: this.currentChat, content, timestamp: Date.now(), read: false };
+                const messages = this.getMessages(this.currentUser.id, this.currentChat);
+                messages.push(message);
+                localStorage.setItem('mileon_messages', JSON.stringify(messages));
+                input.value = '';
+                this.loadMessages(this.currentChat);
+                this.updateMessageBadge();
+                this.showToast('success', 'Message envoyé');
+            },
+            getMessages(userId1, userId2) {
+                const allMessages = localStorage.getItem('mileon_messages');
+                const messages = allMessages ? JSON.parse(allMessages) : [];
+                return messages.filter(msg => (msg.senderId === userId1 && msg.receiverId === userId2) || (msg.senderId === userId2 && msg.receiverId === userId1));
+            },
+            updateMessageBadge() {
+                if (!this.currentUser || this.isGuest) return;
+                const allMessages = localStorage.getItem('mileon_messages');
+                const messages = allMessages ? JSON.parse(allMessages) : [];
+                const unreadCount = messages.filter(msg => msg.receiverId === this.currentUser.id && !msg.read).length;
+                const badge = document.getElementById('chat-badge');
+                if (badge) { if (unreadCount > 0) { badge.textContent = unreadCount > 9 ? '9+' : unreadCount; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+            },
+
+            // POSTS
+            showCreatePostModal() { document.getElementById('create-post-modal').classList.remove('hidden'); },
+            createPost() {
+                const content = document.getElementById('post-content').value.trim();
+                const imageInput = document.getElementById('post-image-input');
+                if (!content && !imageInput.files[0]) { this.showToast('error', 'Veuillez ajouter du contenu ou une image'); return; }
+                const post = { id: Date.now().toString(), userId: this.currentUser.id, userName: this.currentUser.name, userAvatar: this.currentUser.photo || null, userAvatarColor: this.currentUser.avatarColor, content, image: null, timestamp: Date.now(), likes: [], comments: [] };
+                if (imageInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { post.image = e.target.result; this.savePost(post); };
+                    reader.readAsDataURL(imageInput.files[0]);
+                } else { this.savePost(post); }
+            },
+            savePost(post) {
+                const posts = this.getPosts();
+                posts.unshift(post);
+                localStorage.setItem('mileon_posts', JSON.stringify(posts));
+                document.getElementById('create-post-modal').classList.add('hidden');
+                document.getElementById('create-post-form').reset();
+                this.showToast('success', 'Post publié !');
+                this.updateSocial();
+            },
+            getPosts() { const posts = localStorage.getItem('mileon_posts'); return posts ? JSON.parse(posts) : []; },
+            likePost(postId) {
+                const posts = this.getPosts();
+                const postIndex = posts.findIndex(p => p.id === postId);
+                if (postIndex === -1) return;
+                const likeIndex = posts[postIndex].likes.indexOf(this.currentUser.id);
+                if (likeIndex === -1) posts[postIndex].likes.push(this.currentUser.id);
+                else posts[postIndex].likes.splice(likeIndex, 1);
+                localStorage.setItem('mileon_posts', JSON.stringify(posts));
+                this.updateSocial();
+            },
+
+            // PROFILE
+            updateHeaderAvatar() {
+                const avatar = document.getElementById('header-avatar');
+                if (avatar && this.currentUser) {
+                    if (this.currentUser.photo) { avatar.innerHTML = `<img src="${this.currentUser.photo}" alt="${this.currentUser.name}">`; }
+                    else { avatar.innerHTML = ''; const span = document.createElement('span'); span.textContent = this.getInitials(this.currentUser.name); avatar.appendChild(span); }
+                    if (this.currentUser.avatarColor) avatar.style.background = this.currentUser.avatarColor;
+                }
+            },
+            showEditProfileModal() {
+                if (!this.currentUser) return;
+                document.getElementById('edit-name').value = this.currentUser.name;
+                document.getElementById('edit-username').value = this.currentUser.username || '';
+                document.getElementById('edit-bio').value = this.currentUser.bio || '';
+                document.getElementById('edit-profile-modal').classList.remove('hidden');
+            },
+            handlePhotoUpload(input) {
+                const file = input.files[0];
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) { this.showToast('error', 'Image trop volumineuse (max 5MB)'); return; }
+                    if (!file.type.startsWith('image/')) { this.showToast('error', 'Format de fichier non supporté'); return; }
+                    const reader = new FileReader();
+                    reader.onload = (e) => { this.uploadedPhoto = e.target.result; const avatar = document.getElementById('profile-avatar'); if (avatar) avatar.innerHTML = `<img src="${e.target.result}" alt="${this.currentUser.name}">`; this.updateHeaderAvatar(); this.showToast('success', 'Photo chargée !'); };
+                    reader.readAsDataURL(file);
+                }
+            },
+            saveProfile() {
+                if (this.isGuest) { this.showToast('warning', 'Créez un compte pour sauvegarder votre profil'); return; }
+                const name = document.getElementById('edit-name').value.trim();
+                const username = document.getElementById('edit-username').value.trim();
+                const bio = document.getElementById('edit-bio').value.trim();
+                if (!name) { this.showToast('error', 'Le nom est requis'); return; }
+                const users = this.getUsers();
+                const userIndex = users.findIndex(u => u.id === this.currentUser.id);
+                if (userIndex === -1) { this.showToast('error', 'Utilisateur non trouvé'); return; }
+                users[userIndex].name = name; users[userIndex].username = username; users[userIndex].bio = bio;
+                if (this.uploadedPhoto) { users[userIndex].photo = this.uploadedPhoto; this.currentUser.photo = this.uploadedPhoto; }
+                users[userIndex].avatarColor = this.selectedAvatarColor;
+                this.saveUsers(users);
+                this.currentUser = { ...users[userIndex] };
+                localStorage.setItem('mileon_session', JSON.stringify(this.currentUser));
+                this.updateHeaderAvatar(); this.updateProfile();
+                document.getElementById('edit-profile-modal').classList.add('hidden');
+                this.uploadedPhoto = null;
+                this.showToast('success', 'Profil mis à jour avec succès !');
+            },
+            showSettingsModal() { document.getElementById('settings-modal').classList.remove('hidden'); },
+            saveSettings() {
+                const theme = document.getElementById('settings-theme').value;
+                this.isDarkMode = theme === 'dark';
+                localStorage.setItem('mileon_theme', theme);
+                this.applyTheme();
+                document.getElementById('settings-modal').classList.add('hidden');
+                this.showToast('success', 'Paramètres enregistrés !');
+            },
+
+            // SOCIAL FEED
+            updateSocial() { this.updateActivityFeed(); this.updateFriendRequests(); this.updateFriendsList(); },
+            updateActivityFeed() {
+                const container = document.getElementById('social-feed');
+                const posts = this.getPosts();
+                if (posts.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-users empty-state-icon"></i><p class="empty-state-title">Aucune activité à afficher</p></div>'; return; }
+                container.innerHTML = posts.map(post => { const isLiked = post.likes.includes(this.currentUser.id); return `<div class="post-card"><div class="post-header"><div class="post-avatar" style="background: ${post.userAvatarColor || 'var(--gradient-primary)'}">${post.userAvatar ? `<img src="${post.userAvatar}" alt="${post.userName}">` : this.getInitials(post.userName)}</div><div class="post-info"><div class="post-author">${post.userName}</div><div class="post-time">${this.formatDate(post.timestamp)}</div></div></div><div class="post-content">${post.content}</div>${post.image ? `<img src="${post.image}" class="post-image" alt="Post image">` : ''}<div class="post-actions"><div class="post-action ${isLiked ? 'liked' : ''}" onclick="MileonApp.likePost('${post.id}')"><i class="fas fa-heart"></i><span>${post.likes.length}</span></div><div class="post-action"><i class="fas fa-comment"></i><span>${post.comments.length}</span></div></div></div>`; }).join('');
+            },
+            updateFriendRequests() {
+                const container = document.getElementById('friend-requests');
+                if (!this.currentUser || this.isGuest) { container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Connectez-vous pour voir les demandes</p></div>'; return; }
+                const requests = this.currentUser.friendRequests || [];
+                if (requests.length === 0) { container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Aucune demande en attente</p></div>'; return; }
+                container.innerHTML = requests.map(requesterId => { const requester = this.getUserById(requesterId); if (!requester) return ''; return `<div class="friend-request-card"><div class="friend-request-avatar" style="background: ${requester.avatarColor || 'var(--gradient-primary)'}">${requester.photo ? `<img src="${requester.photo}" alt="${requester.name}">` : this.getInitials(requester.name)}</div><div class="friend-request-info"><div class="friend-request-name">${requester.name}</div></div><div class="friend-request-actions"><button class="friend-request-btn accept" onclick="MileonApp.acceptFriendRequest('${requesterId}')">✓</button><button class="friend-request-btn decline" onclick="MileonApp.declineFriendRequest('${requesterId}')">✕</button></div></div>`; }).join('');
+            },
+            updateFriendsList() {
+                const container = document.getElementById('friends-list');
+                if (!this.currentUser || this.isGuest) { container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Connectez-vous pour voir vos amis</p></div>'; return; }
+                const friends = this.currentUser.friends || [];
+                if (friends.length === 0) { container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Aucun ami pour le moment</p></div>'; return; }
+                container.innerHTML = friends.map(friendId => { const friend = this.getUserById(friendId); if (!friend) return ''; const isOnline = friend.isOnline || (Date.now() - friend.lastOnline < 300000); return `<div class="friend-item"><div class="friend-avatar" style="background: ${friend.avatarColor || 'var(--gradient-primary)'}">${friend.photo ? `<img src="${friend.photo}" alt="${friend.name}">` : this.getInitials(friend.name)}</div><div class="friend-info"><div class="friend-name">${friend.name}</div><div class="friend-status ${isOnline ? 'online' : ''}">${friend.username} ${isOnline ? '• En ligne' : ''}</div></div><button class="btn btn-secondary btn-icon" onclick="MileonApp.openChat('${friend.id}')" title="Message"><i class="fas fa-comment"></i></button><button class="btn btn-ghost btn-icon" onclick="MileonApp.removeFriend('${friend.id}')" title="Supprimer"><i class="fas fa-user-minus"></i></button></div>`; }).join('');
+            },
+
+            // MESSAGES VIEW
+            updateMessages() {
+                const container = document.getElementById('conversations-list');
+                if (!this.currentUser || this.isGuest) { container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Connectez-vous pour voir vos messages</p></div>'; return; }
+                const friends = this.currentUser.friends || [];
+                if (friends.length === 0) { container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Aucune conversation</p></div>'; return; }
+                container.innerHTML = friends.map(friendId => { const friend = this.getUserById(friendId); if (!friend) return ''; const messages = this.getMessages(this.currentUser.id, friendId); const lastMessage = messages[messages.length - 1]; const isOnline = friend.isOnline || (Date.now() - friend.lastOnline < 300000); return `<div class="activity-item" onclick="MileonApp.openChat('${friend.id}')" style="cursor: pointer;"><div class="activity-avatar" style="background: ${friend.avatarColor || 'var(--gradient-primary)'}">${friend.photo ? `<img src="${friend.photo}" alt="${friend.name}">` : this.getInitials(friend.name)}</div><div class="activity-content"><div class="activity-header"><span class="activity-name">${friend.name}</span><span class="activity-time">${isOnline ? '● En ligne' : 'Hors ligne'}</span></div><div class="activity-stats"><span>${lastMessage ? lastMessage.content : 'Aucun message'}</span></div></div></div>`; }).join('');
+            },
+
+            // DASHBOARD
+            updateDashboard() {
+                if (this.isGuest) { document.getElementById('stat-distance').textContent = '0'; document.getElementById('stat-duration').textContent = '0'; document.getElementById('stat-calories').textContent = '0'; document.getElementById('stat-activities').textContent = '0'; return; }
+                const stats = this.getUserStats(this.currentUser.id);
+                if (stats) { document.getElementById('stat-distance').textContent = stats.totalDistance.toFixed(1); document.getElementById('stat-duration').textContent = (stats.totalTime / 3600000).toFixed(1); document.getElementById('stat-calories').textContent = stats.totalCalories; document.getElementById('stat-activities').textContent = stats.totalActivities; }
+                this.updateProgressChart();
+            },
+            updateProgressChart() {
+                const ctx = document.getElementById('progress-chart');
+                if (!ctx) return;
+                if (this.isGuest) { ctx.parentElement.innerHTML = '<div class="empty-state"><p>Créez un compte pour voir vos statistiques</p></div>'; return; }
+                const activities = this.getActivities().filter(a => a.userId === this.currentUser.id).slice(0, 7);
+                const labels = activities.map(a => { const d = new Date(a.date); return `${d.getDate()}/${d.getMonth() + 1}`; }).reverse();
+                const data = activities.map(a => a.distance).reverse();
+                if (this.progressChart) this.progressChart.destroy();
+                Chart.defaults.color = this.isDarkMode ? '#94A3B8' : '#6B7280';
+                Chart.defaults.borderColor = this.isDarkMode ? '#334155' : '#E5E7EB';
+                this.progressChart = new Chart(ctx, { type: 'line', data: { labels: labels.length > 0 ? labels : ['Aucune donnée'], datasets: [{ label: 'Distance (km)', data: data.length > 0 ? data : [0], borderColor: '#06B6D4', backgroundColor: 'rgba(6, 182, 212, 0.2)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } } });
+            },
+
+            // PROFILE
+            updateProfile() {
+                if (!this.currentUser) return;
+                document.getElementById('profile-name').textContent = this.currentUser.name;
+                document.getElementById('profile-email').textContent = this.isGuest ? 'Mode Invité' : this.currentUser.email;
+                const avatar = document.getElementById('profile-avatar');
+                if (this.currentUser.photo) { avatar.innerHTML = `<img src="${this.currentUser.photo}" alt="${this.currentUser.name}">`; }
+                else { avatar.innerHTML = ''; const span = document.createElement('span'); span.textContent = this.getInitials(this.currentUser.name); avatar.appendChild(span); }
+                if (this.currentUser.avatarColor) avatar.style.background = this.currentUser.avatarColor;
+                if (this.isGuest) { document.getElementById('profile-badges').innerHTML = '<span class="badge"><i class="fas fa-user-secret"></i> Invité</span>'; document.getElementById('total-distance').textContent = '0'; document.getElementById('total-time').textContent = '0'; document.getElementById('total-calories').textContent = '0'; document.getElementById('total-days').textContent = '0'; return; }
+                const stats = this.getUserStats(this.currentUser.id);
+                const badges = this.calculateBadges(stats);
+                document.getElementById('profile-badges').innerHTML = badges.map(b => `<span class="badge"><i class="fas fa-medal"></i> ${b}</span>`).join('');
+                if (stats) { document.getElementById('total-distance').textContent = stats.totalDistance.toFixed(1); document.getElementById('total-time').textContent = (stats.totalTime / 3600000).toFixed(1); document.getElementById('total-calories').textContent = stats.totalCalories; document.getElementById('total-days').textContent = stats.activeDays ? stats.activeDays.length : 0; }
+            },
+            calculateBadges(stats) { const badges = ['Débutant']; if (!stats) return badges; if (stats.totalDistance >= 10) badges.push('Coureur'); if (stats.totalDistance >= 50) badges.push('Endurant'); if (stats.totalDistance >= 100) badges.push('Marathonien'); if (stats.totalActivities >= 10) badges.push('Régulier'); return [...new Set(badges)]; },
+            getUserStats(userId) { const stats = localStorage.getItem(`mileon_stats_${userId}`); return stats ? JSON.parse(stats) : { totalDistance: 0, totalTime: 0, totalCalories: 0, totalActivities: 0, activeDays: [] }; },
+            getInitials(name) { return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2); },
+
+            // GPS & TRACKING
+            initMap() {
+                if (this.map) return;
+                const defaultPos = [48.8566, 2.3522];
+                this.map = L.map('map').setView(defaultPos, 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(this.map);
+                const markerIcon = L.divIcon({ className: 'custom-marker pulsing', iconSize: [20, 20], iconAnchor: [10, 10] });
+                this.marker = L.marker(defaultPos, { icon: markerIcon }).addTo(this.map);
+                this.polyline = L.polyline([], { color: '#06B6D4', weight: 5, opacity: 0.8 }).addTo(this.map);
+            },
+            showSportsSpots() {
+                const spots = [{ lat: 48.8606, lng: 2.3376, name: 'Parc des Tuileries', type: 'Parc' }, { lat: 48.8529, lng: 2.3499, name: 'Jardin du Luxembourg', type: 'Parc' }, { lat: 48.8738, lng: 2.2950, name: 'Bois de Boulogne', type: 'Parcours' }];
+                spots.forEach(spot => { const poiIcon = L.divIcon({ className: 'poi-marker', html: '<i class="fas fa-running"></i>', iconSize: [24, 24], iconAnchor: [12, 12] }); const marker = L.marker([spot.lat, spot.lng], { icon: poiIcon }).addTo(this.map); marker.bindPopup(`<b>${spot.name}</b><br>${spot.type}`); });
+                this.showToast('info', 'Spots sportifs affichés sur la carte');
+            },
+            startTracking() {
+                if (!('geolocation' in navigator)) { this.showToast('error', 'Géolocalisation non supportée'); return; }
+                const btn = document.getElementById('start-btn');
+                btn.disabled = true;
+                navigator.geolocation.getCurrentPosition(() => this.initTrackingSession(), (error) => { this.handleGeoError(error); btn.disabled = false; }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+            },
+            initTrackingSession() {
+                this.isTracking = true;
+                this.trackData = { startTime: Date.now(), endTime: null, positions: [], distance: 0, duration: 0 };
+                document.getElementById('start-btn').classList.add('hidden');
+                document.getElementById('stop-btn').classList.remove('hidden');
+                document.getElementById('tracking-stats').classList.remove('hidden');
+                this.updateGPSStatus('searching', 'Acquisition du signal GPS...');
+                this.watchId = navigator.geolocation.watchPosition((position) => this.onPositionUpdate(position), (error) => this.handleGeoError(error), { enableHighAccuracy: true, timeout: 10000, maximumAge: 0, distanceFilter: 5 });
+                this.trackTimer = setInterval(() => this.updateTimer(), 1000);
+                this.showToast('success', 'Tracking démarré ! Bon sport 🏃');
+            },
+            onPositionUpdate(position) {
+                const lat = position.coords.latitude, lng = position.coords.longitude, accuracy = position.coords.accuracy, speed = position.coords.speed;
+                const newPosition = { lat, lng, timestamp: Date.now(), accuracy, speed };
+                if (this.trackData.positions.length > 0) {
+                    const lastPos = this.trackData.positions[this.trackData.positions.length - 1];
+                    const segmentDistance = this.calculateDistance(lastPos.lat, lastPos.lng, lat, lng);
+                    if (segmentDistance > 3) this.trackData.distance += segmentDistance;
+                }
+                this.trackData.positions.push(newPosition);
+                const newLatLng = new L.LatLng(lat, lng);
+                this.marker.setLatLng(newLatLng);
+                this.polyline.addLatLng(newLatLng);
+                if (this.trackData.positions.length === 1) this.map.setView(newLatLng, 15, { animate: true });
+                if (this.trackData.positions.length % 10 === 0) this.map.panTo(newLatLng, { animate: true, duration: 0.5 });
+                this.updateTrackingStats(speed);
+                this.updateGPSStatus('active', `Précision: ±${Math.round(accuracy)}m`);
+            },
+            updateTrackingStats(speedMps) {
+                const distanceKm = this.trackData.distance / 1000;
+                const durationSec = Math.floor((Date.now() - this.trackData.startTime) / 1000);
+                document.getElementById('track-distance').textContent = distanceKm.toFixed(2);
+                document.getElementById('track-time').textContent = this.formatDuration(durationSec * 1000);
+                document.getElementById('track-speed').textContent = speedMps && speedMps > 0 ? (speedMps * 3.6).toFixed(1) : '0.0';
+                if (distanceKm > 0.01 && durationSec > 0) document.getElementById('track-pace').textContent = this.formatPace(durationSec / distanceKm);
+                else document.getElementById('track-pace').textContent = '--:--';
+            },
+            updateTimer() { if (!this.isTracking) return; document.getElementById('track-time').textContent = this.formatDuration(Date.now() - this.trackData.startTime); },
+            stopTracking() {
+                if (!this.isTracking) return;
+                this.isTracking = false;
+                if (this.watchId !== null) { navigator.geolocation.clearWatch(this.watchId); this.watchId = null; }
+                if (this.trackTimer) { clearInterval(this.trackTimer); this.trackTimer = null; }
+                this.trackData.endTime = Date.now();
+                this.trackData.duration = this.trackData.endTime - this.trackData.startTime;
+                this.saveActivity();
+                document.getElementById('start-btn').classList.remove('hidden');
+                document.getElementById('stop-btn').classList.add('hidden');
+                document.getElementById('tracking-stats').classList.add('hidden');
+                document.getElementById('start-btn').disabled = false;
+                this.updateGPSStatus('inactive', 'GPS déconnecté');
+                this.showToast('success', 'Activité enregistrée ! 🎉');
+            },
+            handleGeoError(error) {
+                let message = 'Erreur GPS';
+                switch(error.code) { case error.PERMISSION_DENIED: message = 'Permission GPS refusée'; break; case error.POSITION_UNAVAILABLE: message = 'Position GPS indisponible'; break; case error.TIMEOUT: message = 'Délai GPS dépassé'; break; }
+                this.updateGPSStatus('error', message);
+                this.showToast('error', message);
+            },
+            updateGPSStatus(status, text) { document.getElementById('gps-status').className = 'gps-status ' + status; document.getElementById('gps-indicator').className = 'gps-indicator ' + status; document.getElementById('gps-text').textContent = text; },
+            centerMap() { if (this.trackData.positions.length > 0) { const lastPos = this.trackData.positions[this.trackData.positions.length - 1]; this.map.setView([lastPos.lat, lastPos.lng], 15, { animate: true }); this.showToast('info', 'Carte recentrée'); } else { this.map.setView([48.8566, 2.3522], 13); } },
+            toggleFullscreen() { const container = document.getElementById('map-container'); if (!document.fullscreenElement) { container.requestFullscreen().catch(() => this.showToast('warning', 'Plein écran non supporté')); } else { document.exitFullscreen(); } },
+            calculateDistance(lat1, lon1, lat2, lon2) { const R = 6371000; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180; const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2); return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); },
+            formatDuration(ms) { const totalSeconds = Math.floor(ms / 1000); const hours = Math.floor(totalSeconds / 3600); const minutes = Math.floor((totalSeconds % 3600) / 60); const seconds = totalSeconds % 60; if (hours > 0) return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`; return `${minutes}:${seconds.toString().padStart(2, '0')}`; },
+            formatPace(secondsPerKm) { if (!isFinite(secondsPerKm)) return '--:--'; const minutes = Math.floor(secondsPerKm / 60); const seconds = Math.floor(secondsPerKm % 60); return `${minutes}:${seconds.toString().padStart(2, '0')}`; },
+            formatDate(timestamp) { const date = new Date(timestamp); const diff = Date.now() - date; if (diff < 60000) return 'À l\'instant'; if (diff < 3600000) return `${Math.floor(diff / 60000)} min`; if (diff < 86400000) return `${Math.floor(diff / 3600000)} h`; if (diff < 604800000) return `${Math.floor(diff / 86400000)} j`; return date.toLocaleDateString('fr-FR'); },
+            formatMessageTime(timestamp) { const date = new Date(timestamp); return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); },
+            saveActivity() {
+                const activity = { id: Date.now().toString(), userId: this.currentUser.id, userName: this.currentUser.name, userAvatar: this.getInitials(this.currentUser.name), userAvatarColor: this.currentUser.avatarColor, userPhoto: this.currentUser.photo, date: new Date().toISOString(), distance: this.trackData.distance / 1000, duration: this.trackData.duration, positions: this.trackData.positions, calories: Math.round(this.trackData.distance / 1000 * 60), type: 'course' };
+                const activities = this.getActivities();
+                activities.unshift(activity);
+                this.saveActivities(activities);
+                if (!this.isGuest) this.updateUserStats(activity);
+                this.lastActivity = activity;
+            },
+            updateUserStats(activity) {
+                const stats = this.getUserStats(this.currentUser.id) || { totalDistance: 0, totalTime: 0, totalCalories: 0, totalActivities: 0, activeDays: [] };
+                stats.totalDistance += activity.distance; stats.totalTime += activity.duration; stats.totalCalories += activity.calories; stats.totalActivities += 1;
+                const dateStr = new Date(activity.date).toDateString();
+                if (!stats.activeDays.includes(dateStr)) stats.activeDays.push(dateStr);
+                localStorage.setItem(`mileon_stats_${this.currentUser.id}`, JSON.stringify(stats));
+            },
+            getActivities() { const activities = localStorage.getItem('mileon_activities'); return activities ? JSON.parse(activities) : []; },
+            saveActivities(activities) { localStorage.setItem('mileon_activities', JSON.stringify(activities)); },
+            loadUsers() { const users = this.getUsers(); if (users.length === 0) { const demoUsers = [{ id: '1', name: 'Marie Martin', username: '@marie', email: 'marie@email.com', password: this.hashPassword('demo123'), createdAt: new Date().toISOString(), lastLogin: Date.now(), isOnline: true, lastOnline: Date.now(), friends: [], friendRequests: [], posts: [], badges: ['Coureur'], bio: 'Passionnée de running 🏃‍♀️', photo: null, avatarColor: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)' }]; this.saveUsers(demoUsers); } },
+            startMessageListener() { this.messageCheckInterval = setInterval(() => { this.updateMessageBadge(); }, 5000); },
+            updateUserOnlineStatus() { if (this.currentUser && !this.isGuest) { const users = this.getUsers(); const userIndex = users.findIndex(u => u.id === this.currentUser.id); if (userIndex !== -1) { users[userIndex].lastOnline = Date.now(); users[userIndex].isOnline = true; this.saveUsers(users); } } setTimeout(() => this.updateUserOnlineStatus(), 30000); },
+            showToast(type, message) {
+                const container = document.getElementById('toast-container');
+                const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<i class="fas ${icons[type]} toast-icon"></i><span class="toast-message">${message}</span><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+                container.appendChild(toast);
+                setTimeout(() => { if (toast.parentElement) { toast.style.animation = 'slideInRight 0.3s ease reverse'; setTimeout(() => toast.remove(), 300); } }, 4000);
+            }
+        };
+
+        // ============================================
+        // INITIALISATION IMMEDIATE
+        // ============================================
+        console.log('🚀 Mileon Social loading...');
+        window.MileonApp = MileonApp;
+        console.log('✅ MileonApp exposed to window');
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => { console.log('✅ DOM ready, initializing MileonApp...'); MileonApp.init(); });
+        } else {
+            console.log('✅ DOM already ready, initializing MileonApp...');
+            MileonApp.init();
+        }
+    </script>
+</body>
+</html>
